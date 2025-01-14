@@ -1,29 +1,29 @@
 from flask import Flask, request, jsonify
-from utils import add, subtract
+from health_utils import calculate_bmi, calculate_bmr
 
 app = Flask(__name__)
 
-@app.route("/")
-def home():
-    return jsonify({"message": "Welcome to the Arithmetic API!"})
-
-@app.route("/add", methods=["POST"])
-def add_numbers():
+@app.route('/bmi', methods=['POST'])
+def bmi():
     data = request.get_json()
-    try:
-        result = add(data["a"], data["b"])
-        return jsonify({"operation": "addition", "result": result})
-    except KeyError:
-        return jsonify({"error": "Missing required parameters 'a' and 'b'"}), 400
+    height = data.get('height')
+    weight = data.get('weight')
+    if height and weight:
+        bmi_value = calculate_bmi(height, weight)
+        return jsonify({'BMI': round(bmi_value, 2)}), 200
+    return jsonify({'error': 'Invalid input'}), 400
 
-@app.route("/subtract", methods=["POST"])
-def subtract_numbers():
+@app.route('/bmr', methods=['POST'])
+def bmr():
     data = request.get_json()
-    try:
-        result = subtract(data["a"], data["b"])
-        return jsonify({"operation": "subtraction", "result": result})
-    except KeyError:
-        return jsonify({"error": "Missing required parameters 'a' and 'b'"}), 400
+    height = data.get('height')
+    weight = data.get('weight')
+    age = data.get('age')
+    gender = data.get('gender')
+    if height and weight and age and gender:
+        bmr_value = calculate_bmr(height, weight, age, gender)
+        return jsonify({'BMR': round(bmr_value, 2)}), 200
+    return jsonify({'error': 'Invalid input'}), 400
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
